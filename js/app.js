@@ -19,7 +19,7 @@
     checkmate: e("체크메이트"), stalemate: e("스테일메이트"), repetition: e("3회 동형 반복"),
     insufficient: e("기물 부족"), fifty: e("50수 규칙"), resign: e("기권"), timeout: e("시간 초과"),
     cancel: e("취소"), draw: e("무승부"),
-    five: e("오목 완성"), foul: e("금수 반칙"), full: e("판이 가득 참")
+    five: e("오목 완성"), foul: e("금수 반칙"), full: e("판이 가득 참"), void: e("선생님 무효 처리"), out: e("모든 알 탈락"), limit: e("수 제한 (남은 알이 많은 쪽 승리)")
   };
   const STATUS_KO = { game: e("경기 중"), queue: e("매칭 중"), idle: e("접속 중"), off: e("오프라인") };
 
@@ -63,15 +63,17 @@
 
   // ===== [추가] 오목·체스 통합: 게임마다 점수·경기·설정을 따로 저장 =====
   //  학생 계정(이름·아이디·비밀번호)과 접속 상태는 함께 쓰고,
-  //  체스는 기존 위치 그대로, 오목은 classes/반/x/omok/ 아래에 따로 저장해요.
-  let GAME = (() => { try { const g = localStorage.getItem("arenaGame"); return g === "omok" || g === "chess" ? g : null; } catch { return null; } })();
+  //  체스는 기존 위치 그대로, 오목·알까기는 classes/반/x/게임이름/ 아래에 따로 저장해요.
+  const KINDS = ["alkkagi", "omok", "chess"];
+  let GAME = (() => { try { const g = localStorage.getItem("arenaGame"); return KINDS.includes(g) ? g : null; } catch { return null; } })();
   const game = () => GAME || "chess";
   const PER_GAME = new Set(["games", "live", "active", "queue", "invites", "userGames", "log", "seasons", "settings"]);
   const RF = new Set(["score", "placed", "wins", "losses", "draws", "rankGames", "day", "week", "recentOpp", "scoreAt", "placedAt", "promo", "nWins", "nLosses"]);
-  const OP = "x/omok/";
+  const sep = () => game() !== "chess";            // 따로 저장하는 게임인지
+  const opOf = k => `x/${k}/`;
   function mapOne(p) {
-    if (game() !== "omok") return p;
-    const a = String(p).split("/");
+    if (!sep()) return p;
+    const OP = opOf(game()), a = String(p).split("/");
     if (PER_GAME.has(a[0])) return OP + p;
     if (a[0] === "users" && a[1] && a[2] && RF.has(a[2])) return `${OP}rating/${a[1]}/${a.slice(2).join("/")}`;
     return p;
@@ -79,8 +81,9 @@
   function expand(p, v, out) {
     const a = String(p).split("/").filter(Boolean);
     if (a[0] === "users" && a.length === 2) {
-      if (v == null) { out[p] = null; out[`${OP}rating/${a[1]}`] = null; return; }   // 학생 삭제 → 두 게임 기록 모두 정리
-      if (game() !== "omok") { out[p] = v; return; }
+      if (v == null) { out[p] = null; for (const k of KINDS) if (k !== "chess") out[`${opOf(k)}rating/${a[1]}`] = null; return; }   // 학생 삭제 → 모든 게임 기록 정리
+      if (!sep()) { out[p] = v; return; }
+      const OP = opOf(game());
       const rt = {};
       for (const [k, x] of Object.entries(v)) { if (RF.has(k)) rt[k] = x; else out[`${p}/${k}`] = x; }
       out[`${OP}rating/${a[1]}`] = rt;
@@ -93,7 +96,7 @@
     for (const [uid, u] of Object.entries(base || {})) {
       if (!u || typeof u !== "object") continue;
       let m;
-      if (game() === "omok") {
+      if (sep()) {
         m = {};
         for (const [k, x] of Object.entries(u)) if (!RF.has(k)) m[k] = x;
         Object.assign(m, (rating && rating[uid]) || {});
@@ -118,22 +121,22 @@
     remove: p => D.update("", { [p]: null }),
     on: (p, cb) => {
       if (p !== "users") return B.on(`classes/${S.cid}/${mapOne(p)}`, cb);
-      let base = null, rating = null, gotB = false, gotR = game() !== "omok";
+      let base = null, rating = null, gotB = false, gotR = !sep();
       const emit = () => { if (gotB && gotR) cb(mergeUsers(base, rating)); };
       const u1 = B.on(`classes/${S.cid}/users`, v => { base = v; gotB = true; emit(); });
-      const u2 = game() === "omok" ? B.on(`classes/${S.cid}/${OP}rating`, v => { rating = v; gotR = true; emit(); }) : () => {};
+      const u2 = sep() ? B.on(`classes/${S.cid}/${opOf(game())}rating`, v => { rating = v; gotR = true; emit(); }) : () => {};
       return () => { u1(); u2(); };
     },
     tx: (p, fn) => {
       const a = String(p).split("/");
-      const path = (game() === "omok" && a[0] === "users" && a.length === 2) ? `${OP}rating/${a[1]}` : mapOne(p);
+      const path = (sep() && a[0] === "users" && a.length === 2) ? `${opOf(game())}rating/${a[1]}` : mapOne(p);
       return B.tx(`classes/${S.cid}/${path}`, fn);
     }
   };
 
   // ===== [추가] 게임 고르기 =====
-  Object.defineProperty(window, "BoardView", { configurable: true, get: () => game() === "omok" ? window.OmokBoardView : window.ChessBoardView });
-  const GAME_TITLE = { omok: e("오목 아레나"), chess: e("체스 아레나") };
+  Object.defineProperty(window, "BoardView", { configurable: true, get: () => ({ omok: window.OmokBoardView, alkkagi: window.AlkkagiBoardView })[game()] || window.ChessBoardView });
+  const GAME_TITLE = { alkkagi: e("알까기 아레나"), omok: e("오목 아레나"), chess: e("체스 아레나") };
   function applyGameLook() {
     $$(".brand").forEach(b => { b.textContent = GAME_TITLE[game()]; });
     document.title = `${GAME_TITLE[game()]} · ${e("보드게임 아레나")}`;
@@ -146,7 +149,7 @@
     show(S.isMaster ? "admin" : "student");
   }
   async function setGame(kind) {
-    if (kind !== "omok" && kind !== "chess") return;
+    if (!KINDS.includes(kind)) return;
     if (kind !== GAME) {
       lastKnownTier = null; lastPromoKey = undefined; userGames = {};
       if (gameUnsub) { gameUnsub(); gameUnsub = null; }
@@ -162,7 +165,8 @@
   function renderPick() {
     if (!pickDrawn && window.OmokBoardView && window.ChessBoardView) {
       pickDrawn = true;
-      const om = $('.gc-canvas[data-art="omok"]'), ch = $('.gc-canvas[data-art="chess"]');
+      const om = $('.gc-canvas[data-art="omok"]'), ch = $('.gc-canvas[data-art="chess"]'), ak = $('.gc-canvas[data-art="alkkagi"]');
+      if (ak && window.AlkkagiBoardView) new window.AlkkagiBoardView(ak, { mini: true }).set({ moves: [] });
       if (om) new window.OmokBoardView(om, { mini: true }).set({ moves: [112, 113, 97, 127, 82, 98, 128, 67, 126] });
       if (ch) new window.ChessBoardView(ch, { mini: true }).set({ moves: ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "g8f6"] });
     }
@@ -175,7 +179,7 @@
         el.textContent = (u.placed || 0) < R.PLACEMENT_GAMES ? e("배치고사 {0}/{1}", u.placed || 0, R.PLACEMENT_GAMES) : e("{0} · {1}점", R.tierOf(u.score).name, u.score);
       };
       B.get(`classes/${S.cid}/users/${S.uid}`).then(u => show1("chess", u)).catch(() => {});
-      B.get(`classes/${S.cid}/${OP}rating/${S.uid}`).then(u => show1("omok", u)).catch(() => {});
+      for (const k of KINDS) if (k !== "chess") B.get(`classes/${S.cid}/${opOf(k)}rating/${S.uid}`).then(u => show1(k, u)).catch(() => {});
     } else $$(".gc-tier").forEach(el => { el.textContent = S.isMaster ? e("선생님 화면도 게임별로 따로 관리돼요") : ""; });
   }
 
@@ -364,7 +368,7 @@
     const uB = S.users[blackUid] || {};
     const uW = S.users[whiteUid] || {};
     const st = settings();
-    const isOmok = game() === "omok";
+    const isOmok = game() !== "chess";   // 오목·알까기: 한 수 제한 시간
     const tmMin = isOmok ? 0 : (mode === "rank" ? st.clockRank : st.clockNormal);
     const tm = tmMin > 0 ? { f: tmMin * 60000, s: tmMin * 60000 } : null;   // 체스: f=선공, s=후공 남은 시간(ms)
     const mvSec = isOmok ? Number(mode === "rank" ? st.moveTimeRank : st.moveTimeNormal) || 0 : 0;   // 오목: 한 수 제한 시간
@@ -435,7 +439,7 @@
       if (boardView) boardView.destroy();
       const cv = $("#game-canvas"), fresh = cv.cloneNode(false);   // 캔버스를 새로 만들어 이전 판의 그림·이벤트를 지워요
       cv.replaceWith(fresh);
-      boardView = new window.BoardView(fresh, { interactive: true, labels: true, onTap: onBoardTap });
+      boardView = new window.BoardView(fresh, { interactive: true, labels: true, onTap: onBoardTap, onShot, onAnimEnd: () => renderGame() });
       boardKind = game();
     }
 
@@ -535,6 +539,34 @@
     await D.update(`games/${g.id}`, { moves, turnAt: now });
   }
 
+  // ===== [추가] 알까기 진행: 드래그해서 놓으면(onShot) 물리 계산 결과까지 함께 저장 =====
+  const AK = () => window.Alkkagi;
+  function onShot(sIdx, vx, vy) {
+    const g = S.curGame;
+    if (!g || g.status !== "active" || S.spectate || game() !== "alkkagi") return;
+    const mc = myColor(g), turn = (g.moves || []).length % 2 === 0 ? 1 : 2;
+    if (mc !== turn || AK().colorOf(sIdx) !== mc) return;
+    commitShot({ s: sIdx, vx, vy });
+  }
+  async function commitShot(shot) {
+    const g = S.curGame;
+    if (!g || g.status !== "active") return;
+    const prev = g.moves || [], color = prev.length % 2 === 0 ? 1 : 2, now = B.now();
+    const pos = AK().posOf(prev);
+    if (!pos[shot.s] || !pos[shot.s].a || AK().colorOf(shot.s) !== color) return;
+    const mover = color === 1 ? g.black : g.white, other = color === 1 ? g.white : g.black;
+    if (g.moveLimit && now - (g.turnAt || g.createdAt) > g.moveLimit + 1500) return finishGame(g, prev, { winner: other, reason: "timeout", moves: prev.length });
+    const after = AK().simulate(pos, shot.s, shot.vx, shot.vy, false).after;
+    const moves = prev.concat({ s: shot.s, vx: shot.vx, vy: shot.vy, after });
+    const me = AK().aliveCount(after, color), op = AK().aliveCount(after, 3 - color);
+    if (!op || !me) return finishGame(g, moves, { winner: op === 0 && me > 0 ? mover : me === 0 && op > 0 ? other : null, reason: "out", moves: moves.length });
+    if (moves.length >= 100) {
+      const b = AK().aliveCount(after, 1), w = AK().aliveCount(after, 2);
+      return finishGame(g, moves, { winner: b > w ? g.black : w > b ? g.white : null, reason: "limit", moves: moves.length });
+    }
+    await D.update(`games/${g.id}`, { moves, turnAt: now });
+  }
+
   function maybeTriggerAiMove(g) {
     if (!g || g.status !== "active" || g.matchType !== "ai" || S.spectate) return;
     const moves = g.moves || [];
@@ -546,7 +578,11 @@
       const cur = S.curGame;
       if (!cur || cur.id !== g.id || cur.status !== "active") return;
       if ((cur.moves || []).length !== moves.length) return;
-      if (game() === "omok") {
+      if (game() === "alkkagi") {
+        if (boardView && boardView.busy) { aiTimeout = null; setTimeout(() => maybeTriggerAiMove(S.curGame), 300); return; }   // 알이 다 멈춘 뒤에 쏴요
+        const shot = window.Alkkagi.pickShot(moves, cur.aiLevel || "normal");
+        if (shot) await commitShot(shot);
+      } else if (game() === "omok") {
         const idx = window.OmokAI.pick(moves, cur.aiLevel || "normal");
         if (idx >= 0) await commitOmok(idx);
       } else {
@@ -602,6 +638,31 @@
     for (let i = 0; i < p.l; i++) cells.push('<i class="pd l">✕</i>');
     while (cells.length < 3) cells.push('<i class="pd"></i>');
     return `<span class="promo-dots">${cells.join("")}</span>`;
+  }
+
+  // ===== [추가] 선생님: 관전 중인 경기를 무효 처리 (점수·배치고사·승급전·하루 판수에 반영하지 않음) =====
+  async function voidGame(g) {
+    if (!S.isMaster || !g) return;
+    const fresh = await D.get(`games/${g.id}`).catch(() => null);
+    if (!fresh || (fresh.status !== "active" && fresh.status !== "waiting")) { toast(e("이미 끝난 경기예요."), "bad"); return; }
+    const now = B.now(), moves = fresh.moves || [];
+    const result = { winner: null, reason: "void", moves: moves.length, by: S.uid };
+    const updates = {
+      [`games/${g.id}/status`]: "finished", [`games/${g.id}/result`]: result, [`games/${g.id}/endedAt`]: now,
+      [`games/${g.id}/voided`]: true, [`live/${g.id}`]: null
+    };
+    const humans = [fresh.black, fresh.white].filter(u => u && !String(u).startsWith("ai:"));
+    for (const uid of humans) {
+      if (S.active[uid] === g.id) updates[`active/${uid}`] = null;
+      const opp = uid === fresh.black ? fresh.white : fresh.black;
+      updates[`userGames/${uid}/${g.id}`] = { ts: now, mode: fresh.mode, opp, won: false, draw: true, delta: 0, counted: false, note: e("선생님 무효") };
+    }
+    if (humans.length === 2) {
+      updates[`log/${g.id}`] = { ts: now, mode: fresh.mode, matchType: fresh.matchType, aiLevel: fresh.aiLevel || null,
+        black: fresh.black, white: fresh.white, winner: null, reason: "void", detail: null, moves: moves.length, deltas: null, voided: true };
+    }
+    await D.update("", updates);
+    toast(e("경기를 무효 처리했어요. 점수에는 반영되지 않아요."), "good");
   }
 
   async function finishGame(g, finalMoves, result) {
@@ -753,6 +814,17 @@
           return `<li><span class="res ${cls}">${lbl}</span>${nameTag(r.opp, "", { level: String(r.opp).split(":")[1] })}<span class="sp"></span>${dStr}<button type="button" class="btn xs ghost" data-replay="${esc(r.gid)}">기보</button></li>`;
         }).join("")}
       </ul>` : `<p class="empty">아직 완료한 경기가 없습니다.</p>`;
+    } else if (game() === "alkkagi") {
+      side.innerHTML = `<div class="rules">
+        <p><b>알까기 규칙</b> — 흑과 백이 3개씩 가지고, 상대 알을 모두 판 밖으로 떨어뜨리면 이겨요.</p>
+        <ul>
+          <li><b>튕기기:</b> 내 알(초록 테두리)을 누른 채 <b>뒤로 당겼다가 놓으면</b> 반대 방향으로 날아가요. 많이 당길수록 세게 나가요.</li>
+          <li><b>차례:</b> 한 번 튕기면 상대 차례예요. 흑이 먼저 해요.</li>
+          <li><b>탈락:</b> 판 밖으로 나간 알은 내 알이든 상대 알이든 사라져요. 너무 세게 쏘면 내 알도 떨어져요!</li>
+          <li><b>무승부:</b> 한 번에 두 사람 알이 모두 떨어지면 무승부예요.</li>
+          <li><b>시간:</b> 한 번 튕길 때마다 제한 시간이 있고, 넘기면 시간 초과로 져요.</li>
+        </ul>
+      </div>`;
     } else if (game() === "omok") {
       side.innerHTML = `<div class="rules">
         <p><b>렌주룰 요약</b> — 흑이 먼저 두고, 가로·세로·대각선으로 정확히 5개를 먼저 이으면 이깁니다.</p>
@@ -783,9 +855,10 @@
     const turnColor = moves.length % 2 === 0 ? 1 : 2;
     const mc = myColor(g);
     const st = settings();
-    const isOmok = game() === "omok";
-    const c = isOmok ? null : CR.from(moves);
+    const kind = game(), isOmok = kind === "omok", isAk = kind === "alkkagi";
+    const c = kind === "chess" ? CR.from(moves) : null;
     $("#g-num-btn").textContent = isOmok ? e("번호") : e("기보");
+    $("#g-num-btn").classList.toggle("hidden", isAk);
 
     const modeTxt = g.mode === "rank" ? e("🏆 랭크전") : e("🎮 일반전");
     const typeTxt = g.matchType === "ai" ? `AI ${AI_NAMES[g.aiLevel] || ""}` : (MATCH_NAMES[g.matchType] || "");
@@ -793,6 +866,7 @@
     $("#g-spec-tag").classList.toggle("hidden", !S.spectate);
     $("#g-num-btn").classList.toggle("on", S.showNumbers);
     $("#g-resign-btn").classList.toggle("hidden", S.spectate || g.status !== "active" || !mc);
+    $("#g-void-btn").classList.toggle("hidden", !(S.isMaster && (g.status === "active" || g.status === "waiting")));
 
     const renderPcard = (el, uid, color) => {
       const isTurn = g.status === "active" && turnColor === color;
@@ -804,7 +878,7 @@
       const pct = left === null ? 100 : Math.max(0, Math.min(100, Math.round(left / full * 100)));
       el.innerHTML = `
         <div class="top">
-          <span class="stone ${(color === 1) === isOmok ? "b" : "w"}"></span>
+          <span class="stone ${(color === 1) === (kind !== "chess") ? "b" : "w"}"></span>${isAk ? `<span class="ak-left">×${window.Alkkagi.aliveCount(window.Alkkagi.posOf(moves), color)}</span>` : ""}
           ${nameTag(uid, "", { level: g.aiLevel })}
           ${isMe ? `<span class="you">나</span>` : ""}
           <span class="sp"></span>
@@ -824,20 +898,25 @@
     } else if (g.status === "active") {
       const turnUid = turnColor === 1 ? g.black : g.white;
       const chk = c && c.in_check() ? " · 체크!" : "";
-      if (mc === turnColor) {
+      if (isAk) {
+        statusEl.textContent = mc === turnColor ? e("내 차례예요! 초록 테두리 알을 뒤로 당겼다가 놓으세요 ({0}수)", moves.length + 1)
+          : e("{0} 차례예요 ({1}수)", nameOf(turnUid, { level: g.aiLevel }), moves.length + 1);
+      } else if (mc === turnColor) {
         statusEl.textContent = S.ghost != null ? (isOmok ? "같은 자리를 한 번 더 누르거나 아래 [착수]를 누르세요!" : "도착 칸을 한 번 더 누르거나 아래 [착수]를 누르세요!") : `내 차례입니다 (${moves.length + 1}수)${chk}`;
       } else {
         statusEl.textContent = `${nameOf(turnUid, { level: g.aiLevel })} 차례입니다 (${moves.length + 1}수)${chk}`;
       }
     } else if (g.status === "finished") {
       const res = g.result || {};
-      statusEl.textContent = res.winner ? `${nameOf(res.winner, { level: g.aiLevel })} 승리! (${REASON_NAMES[res.reason] || ""})` : `무승부로 종료되었습니다. (${REASON_NAMES[res.reason] || ""})`;
+      statusEl.textContent = res.reason === "void" ? e("선생님이 이 경기를 무효 처리했어요. 점수에 반영되지 않아요.") : res.winner ? `${nameOf(res.winner, { level: g.aiLevel })} 승리! (${REASON_NAMES[res.reason] || ""})` : `무승부로 종료되었습니다. (${REASON_NAMES[res.reason] || ""})`;
     } else {
       statusEl.textContent = "취소된 경기입니다.";
     }
 
     const hints = st.showHints !== false;
-    if (isOmok) {
+    if (isAk) {
+      boardView && boardView.set({ moves, myColor: mc, canShoot: g.status === "active" && mc === turnColor && !S.spectate, flip: mc === 2 });
+    } else if (isOmok) {
       const showF = g.status === "active" && turnColor === 1 && mc === 1 && forbidShown(g);
       boardView && boardView.set({ moves, forbidden: showF ? window.Renju.forbiddenPoints(window.Renju.boardFromMoves(moves)) : [],
         ghost: g.status === "active" && S.ghost != null ? S.ghost : -1, ghostColor: turnColor, numbers: S.showNumbers });
@@ -852,8 +931,8 @@
 
     const mvBox = $("#g-moves");
     if (mvBox) {
-      mvBox.classList.toggle("hidden", isOmok || !S.showNumbers);
-      if (!isOmok && S.showNumbers) {
+      mvBox.classList.toggle("hidden", kind !== "chess" || !S.showNumbers);
+      if (kind === "chess" && S.showNumbers) {
         const hs = c.history();
         mvBox.innerHTML = hs.length ? hs.map((m, i) => `${i % 2 === 0 ? `<span class="mn">${i / 2 + 1}.</span>` : ""}<span class="${i === hs.length - 1 ? "last" : ""}">${esc(m)}</span>`).join(" ") : "아직 둔 수가 없어요.";
         mvBox.scrollTop = mvBox.scrollHeight;
@@ -861,13 +940,15 @@
     }
 
     const ov = $("#board-overlay");
-    if (g.status === "finished" && !ov.dataset.dismissed) {
+    if (g.status === "finished" && isAk && boardView && boardView.busy) {
+      ov.classList.add("hidden");               // 알이 다 멈춘 뒤에 결과 창을 보여 줘요
+    } else if (g.status === "finished" && !ov.dataset.dismissed) {
       const res = g.result || {};
       const iWon = mc && res.winner === S.uid;
       const iLost = mc && res.winner && res.winner !== S.uid;
       ov.classList.remove("hidden", "loss");
       if (iLost) ov.classList.add("loss");
-      const title = !mc ? (res.winner ? `${nameOf(res.winner, { level: g.aiLevel })} 승리` : "무승부") : (iWon ? e("승리!") : iLost ? e("패배") : e("무승부"));
+      const title = res.reason === "void" ? e("경기 무효") : !mc ? (res.winner ? `${nameOf(res.winner, { level: g.aiLevel })} 승리` : "무승부") : (iWon ? e("승리!") : iLost ? e("패배") : e("무승부"));
       const d = g.deltas && S.uid && g.deltas[S.uid];
       const pm = d && d.promo, pmTxt = pm ? `<div class="promo-result ${pm.state}">${esc(pm.note)}${pm.state === "start" || pm.state === "on" || pm.state === "draw" ? promoDots(pm) : ""}</div>` : "";
       const scHtml = d ? `<div class="score-box">${pmTxt}${d.counted ? `${d.delta >= 0 ? "+" : ""}${d.delta}점 (현재 ${S.users[S.uid]?.score ?? ""}점)` : esc(d.note || "연습 경기")}</div>` : "";
@@ -1153,6 +1234,12 @@
       const gh = S.ghost, f = CR.sq(gh.from), t = CR.sq(gh.to), c = CR.from(S.curGame.moves || []);
       S.selSq = -1; S.ghost = null;
       CR.isPromo(c, f, t) ? askPromo(pr => commitUci(f + t + pr)) : commitUci(f + t);
+    });
+    $("#g-void-btn")?.addEventListener("click", async () => {
+      const g = S.curGame;
+      if (!g || !S.isMaster) return;
+      if (!await confirmBox(e("경기 무효"), e("{0} 대 {1} 경기를 지금 끝내고 무효로 처리할까요?<br>두 학생 모두 <b>점수·배치고사·승급전·하루 판수에 반영되지 않아요.</b>", esc(nameOf(g.black, { level: g.aiLevel })), esc(nameOf(g.white, { level: g.aiLevel }))), e("무효 처리"), true)) return;
+      await voidGame(g);
     });
     $("#g-resign-btn")?.addEventListener("click", async () => {
       const g = S.curGame;

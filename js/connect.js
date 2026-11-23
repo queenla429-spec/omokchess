@@ -87,8 +87,8 @@
     // [수정] firebase-config.js는 databaseURL이 없으면 설정이 없는 것으로 보고 연결 화면으로 되돌려요.
     // 「확인을 건너뛰고 연결」을 눌렀을 때 무한히 연결 화면으로 돌아오던 문제 → 기본 주소를 채워 저장
     if (!cfg.databaseURL && cfg.projectId) cfg.databaseURL = `https://${cfg.projectId}-default-rtdb.firebaseio.com`;
-    localStorage.setItem('omokFirebaseConfig', JSON.stringify(cfg));
-    localStorage.removeItem('omokDemoMode');
+    localStorage.setItem(window.ARENA_KEYS.cfg, JSON.stringify(cfg));
+    localStorage.removeItem(window.ARENA_KEYS.demo);
     location.reload();
   }
 
@@ -210,8 +210,16 @@
       } catch { $('#cn-link-err').textContent = '올바른 접속 링크가 아닙니다.'; }
     });
 
-    $('#cn-demo')?.addEventListener('click', () => { localStorage.setItem('omokDemoMode', '1'); location.reload(); });
-    $('#demo-exit')?.addEventListener('click', () => { localStorage.removeItem('omokDemoMode'); location.reload(); });
+    $('#cn-demo')?.addEventListener('click', () => { localStorage.setItem(window.ARENA_KEYS.demo, '1'); location.reload(); });
+    $('#demo-exit')?.addEventListener('click', () => { localStorage.removeItem(window.ARENA_KEYS.demo); location.reload(); });
+    // [추가] 처음 설정 화면: 어느 Firebase에 연결됐는지 보여 주고, 다른 Firebase로 바꿀 수 있게
+    const cfgNow = window.OMOK_FB_CONFIG;
+    const pid = $('#setup-project');
+    if (pid && cfgNow) pid.textContent = cfgNow.projectId || (cfgNow.databaseURL || '').replace(/^https:\/\//, '');
+    $('#setup-relink')?.addEventListener('click', () => {
+      try { localStorage.removeItem(window.ARENA_KEYS.cfg); } catch {}
+      location.href = location.pathname;
+    });
     $('#relink')?.addEventListener('click', () => { window.App.show('connect'); showConnectView('relink'); });
 
     $('#forgot-master')?.addEventListener('click', () => {

@@ -71,6 +71,8 @@
       <div class="connect-note">
         <b>Firebase 연결 완료!</b>
         <p class="cn-sub">이 서버를 관리할 선생님 계정과 첫 번째 반을 만듭니다. 비밀번호는 꼭 기억해 두세요.</p>
+        <p class="cn-sub">연결된 Firebase 프로젝트: <b id="setup-project">-</b><br>내가 만든 프로젝트가 아니라면 아래 버튼으로 다시 연결하세요.</p>
+        <button type="button" class="btn sm" id="setup-relink" style="margin-top:6px">다른 Firebase로 연결하기</button>
       </div>
       <form id="setup-form" style="margin-top:14px;text-align:left">
         <label>선생님 표시 이름<input name="tname" required value="선생님" placeholder="예: 김선생님"></label>
@@ -148,6 +150,11 @@
       <h1>어떤 게임을 할까요?</h1>
       <p class="muted" id="pick-sub">게임마다 점수와 티어가 따로 쌓여요. 위쪽 [게임 바꾸기]로 언제든 바꿀 수 있어요.</p>
       <div class="game-cards">
+        <button type="button" class="game-card alkkagi" data-game="alkkagi">
+          <span class="gc-art"><canvas class="gc-canvas" data-art="alkkagi" width="220" height="220"></canvas></span>
+          <b>알까기</b><small>알을 튕겨 상대 알을 판 밖으로!</small>
+          <span class="gc-tier" data-tier="alkkagi"></span>
+        </button>
         <button type="button" class="game-card omok" data-game="omok">
           <span class="gc-art"><canvas class="gc-canvas" data-art="omok" width="220" height="220"></canvas></span>
           <b>오목</b><small>렌주룰 · 다섯 개를 먼저 이으면 승리</small>
@@ -240,6 +247,7 @@
       <span class="sp"></span>
       <button class="btn sm toggle" id="g-num-btn" data-t>기보</button>
       <button class="btn sm danger hidden" id="g-resign-btn" data-t>기권</button>
+      <button class="btn sm danger hidden" id="g-void-btn" type="button">🚫 경기 무효</button>
     </header>
 
     <main class="game-layout">
@@ -308,6 +316,7 @@
   <script src="js/backend.js"></script>
   <script src="js/omok-board.js"></script>
   <script src="js/chess-board.js"></script>
+  <script src="js/alkkagi.js"></script>
   <script src="js/tier-emblem.js"></script>
   <script src="js/tierup.js"></script>
   <script src="js/motion.js"></script>
