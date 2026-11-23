@@ -1,0 +1,36 @@
+/* 체스 이식용 추가 스타일 — 기존 style/ink-theme/guide 뒤에 불러오세요 */
+.pcard .clk{font-weight:900;font-variant-numeric:tabular-nums;font-size:1.05em;min-width:62px;text-align:center;padding:2px 8px;background:#faf9f1;border:1px solid #a7b098;border-radius:2px;color:var(--text)}
+.pcard.turn .clk{background:#344435;border-color:#344435;color:#fbf8ec}
+.pcard .clk.low,.pcard.turn .clk.low{background:#a5432f;border-color:#a5432f;color:#fff}
+.g-moves{width:100%;max-height:96px;overflow:auto;padding:8px 12px;border:1px solid #989e8d;background:#faf9f1;font-size:.9em;line-height:1.7;border-radius:2px}
+.g-moves .mn{color:var(--muted);margin-left:8px}
+.g-moves .last{font-weight:900;background:#e9d95a66;padding:0 3px}
+.game-foot{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.board-wrap{box-shadow:0 14px 34px #1e281e59,0 0 0 3px #3a2208}
+/* 승급전 */
+.promo-box{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 2px;padding:8px 12px;border:1px solid #d9b48c;background:linear-gradient(90deg,#fff3dc,#fbe6c4);border-radius:2px;font-size:.92em}
+.promo-dots{display:inline-flex;gap:6px;vertical-align:middle}
+.promo-dots .pd{width:22px;height:22px;border-radius:50%;border:2px solid #b9a27a;background:#fffaf0;display:inline-grid;place-items:center;font-style:normal;font-weight:900;font-size:.8em;color:#fff}
+.promo-dots .pd.w{background:#3f7a46;border-color:#2f5d35}
+.promo-dots .pd.l{background:#a5432f;border-color:#7f3122}
+.progress.promo>i{background:linear-gradient(90deg,#e0a030,#f5c542,#e0a030);animation:promoGlow 1.6s ease-in-out infinite}
+@keyframes promoGlow{50%{filter:brightness(1.25)}}
+.pill.promo-pill{background:#fbe6c4;color:#8a4b00;border-color:#d9b48c}
+.promo-result{font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.promo-result.pass{color:var(--good)}
+.promo-result.fail{color:var(--bad)}
+.promo-result.start,.promo-result.on,.promo-result.draw{color:#8a4b00}
+/* 게임 고르기 (시작 메뉴) */
+.pick-wrap{width:min(720px,100%);text-align:center}
+.pick-wrap h1{margin:0 0 6px;font-size:1.7em;font-weight:900;color:#263a2c;letter-spacing:.04em}
+.game-cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0 14px}
+@media(max-width:560px){.game-cards{grid-template-columns:1fr}}
+.game-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 16px 16px;border:1px solid #989e8d;border-radius:2px;background-color:var(--paper);background-image:var(--paper-grain);box-shadow:0 6px 0 -1px #cbd5c0,0 10px 26px #26342922;color:var(--text);transition:transform .15s ease,box-shadow .15s ease,border-color .15s}
+.game-card:hover{transform:translateY(-3px);border-color:#46593e;box-shadow:0 9px 0 -1px #b9c9a8,0 16px 30px #26342930}
+.game-card.on{outline:3px solid #46593e;outline-offset:-2px}
+.game-card b{font-size:1.4em;font-weight:900;margin-top:6px}
+.game-card small{color:var(--muted);font-size:.86em}
+.gc-art{width:min(220px,70vw);aspect-ratio:1/1;display:block;box-shadow:0 8px 20px #1e281e40}
+.gc-canvas{width:100%;height:100%;display:block}
+.gc-tier{min-height:1.3em;font-size:.86em;font-weight:800;color:#46593e}
+.topbar .game-switch{white-space:nowrap}
