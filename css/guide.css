@@ -1,0 +1,13 @@
+/*! © 2026 삼대710. 교실 내 비영리 사용 외 복제·수정·상업적 이용 금지 */
+.cn-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:14px 0 10px}
+.cn-chips button{border:1px solid #99a28c;background:#eceee2;color:#303d2f;padding:4px 10px;border-radius:2px;font-size:.82em;font-weight:700;cursor:pointer}
+.cn-chips button.on{background:#344435;color:#fbf8ec;border-color:#344435}
+.cn-track{background:#faf9f1;border:1px solid #a7b098;border-radius:2px;padding:16px;text-align:left;line-height:1.65;font-size:.93em;color:#282f2b}
+.cn-slide h4{margin:0 0 8px;font-size:1.05em;color:#263a2c}
+.cn-slide ol,.cn-slide ul{margin:6px 0;padding-left:1.35em}
+.cn-slide li{margin:5px 0}
+.cn-red{color:#a5382b;font-weight:800}
+.cn-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.cn-nav .btn{width:auto;margin-top:0}
+.cn-count{font-size:.88em;font-weight:700;color:#596155}
+.cn-rules{font:.8em/1.45 ui-monospace,Consolas,monospace;background:#eef0e4;border:1px solid #b9c0ad;padding:10px;border-radius:2px;white-space:pre-wrap;word-break:break-all;margin:8px 0}

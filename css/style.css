@@ -1,0 +1,192 @@
+/*! © 2026 삼대710. 교실 내 비영리 사용 외 복제·수정·상업적 이용 금지 */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.48;cursor:not-allowed}
+.hidden{display:none!important}
+.sp{flex:1}
+.muted{color:var(--muted)}
+.err{color:var(--bad);font-size:.88em;min-height:1.2em;margin:6px 0 0}
+
+.screen{min-height:100vh;display:flex;flex-direction:column}
+.screen.center{align-items:center;justify-content:center;padding:24px 16px}
+
+.topbar{display:flex;align-items:center;gap:10px;padding:10px 18px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.brand{font-weight:900;font-size:1.15em}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{background:none;border:0;padding:7px 12px;font-weight:700;font-size:.92em;display:inline-flex;align-items:center;gap:6px}
+.tabs .cnt{background:#c94a38;color:#fff;font-size:.76em;padding:1px 6px;border-radius:99px}
+.admin-class{display:flex;align-items:center;gap:8px}
+.admin-class .cls{font-weight:800}
+.admin-class .code{padding:3px 8px;border:1px solid;font-size:.84em;font-weight:700}
+.admin-class select{padding:5px 8px;font-weight:700}
+
+.container{width:min(1180px,100%);margin:0 auto;padding:20px 16px 44px}
+.two-col{display:grid;grid-template-columns:1.05fr 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.two-col{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column}
+
+.panel{border:1px solid;padding:18px}
+.panel h3{margin:0 0 12px;font-size:1.06em;display:flex;align-items:center;gap:8px}
+.a-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.a-head h2{margin:0;font-size:1.35em}
+
+.auth-card{width:min(440px,100%);padding:28px 24px;text-align:center}
+.auth-card h1{margin:0;font-size:1.7em;font-weight:900}
+.auth-card .subtitle{margin:4px 0 16px;color:var(--muted);font-size:.92em}
+.auth-card label,.panel label,.modal label{display:block;font-size:.88em;font-weight:700;margin-bottom:10px}
+.auth-card input,.panel input,.panel select,.panel textarea,.modal input,.modal select,.modal textarea{display:block;width:100%;margin-top:4px;padding:9px 11px;border:1px solid}
+.demo-note{padding:10px 12px;border:1px solid;font-size:.86em;line-height:1.5;margin-bottom:10px}
+.banner{padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+.btn{padding:8px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,border-color .15s}
+.btn.lg{padding:11px 18px;font-size:1em}
+.btn.sm{padding:6px 11px;font-size:.88em}
+.btn.xs{padding:4px 8px;font-size:.8em}
+.pill{padding:2px 8px;font-size:.78em;font-weight:800}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+.seg{display:inline-flex;padding:3px;border:1px solid;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 12px;font-weight:700;font-size:.88em;color:var(--muted)}
+.auth-card .seg{display:flex}
+.auth-card .seg button{flex:1}
+
+/* 프로필 & 모드 */
+.profile-top{display:flex;align-items:center;gap:16px}
+.big-emb svg{width:74px;height:74px;display:block}
+.profile .tier-name{font-size:1.3em;font-weight:900}
+.profile .score-num{font-size:1.05em;font-weight:800;margin-top:2px}
+.progress{height:10px;border:1px solid;margin:12px 0 6px;overflow:hidden}
+.progress>i{display:block;height:100%;transition:width .35s ease}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;text-align:center}
+.stats div{padding:8px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08)}
+.stats b{display:block;font-size:1.15em}
+.stats span{font-size:.8em;color:var(--muted)}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.mode-grid{grid-template-columns:1fr}}
+.mode-btn{padding:14px 12px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.mode-btn b{font-size:1.02em}
+.mode-btn small{color:var(--muted);font-size:.84em}
+
+/* 티어 배지 & 색상 */
+.tier-color-bronze{color:var(--c-bronze)}
+.tier-color-silver{color:var(--c-silver)}
+.tier-color-gold{color:var(--c-gold)}
+.tier-color-platinum{color:var(--c-platinum)}
+.tier-color-diamond{color:var(--c-diamond)}
+.tier-color-master{color:var(--c-master)}
+.tier-color-challenger{color:var(--c-challenger)}
+.tier-color-champion{color:var(--c-champion)}
+
+.ntag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 5px;border:1.5px solid transparent;border-radius:99px;font-weight:800;font-size:.88em;line-height:1.2;vertical-align:middle}
+.ntag.lg{font-size:.98em;padding:3px 10px 3px 6px}
+.ntag svg.emb{width:18px;height:18px;flex-shrink:0}
+.ntag.lg svg.emb{width:22px;height:22px}
+.t-bronze{--tc:var(--c-bronze)}
+.t-silver{--tc:var(--c-silver)}
+.t-gold{--tc:var(--c-gold)}
+.t-platinum{--tc:var(--c-platinum)}
+.t-diamond{--tc:var(--c-diamond)}
+.t-master{--tc:var(--c-master)}
+.t-challenger{--tc:var(--c-challenger)}
+.t-champion{--tc:var(--c-champion)}
+.t-placement{--tc:var(--c-placement)}
+
+/* 상태 점 & 바둑돌 */
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px}
+.stone{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:middle;flex-shrink:0}
+.stone.sm{width:13px;height:13px}
+.stone.b{background:radial-gradient(circle at 35% 35%,#555,#111)}
+.stone.w{background:radial-gradient(circle at 35% 35%,#fff,#ccc);border:1px solid #888}
+
+/* 순위 리스트 & 기록 */
+.rank-list,.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:480px;overflow-y:auto}
+.rank-list li,.hist li{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:.92em}
+.rank-list .no{width:24px;font-weight:900;text-align:center}
+.res{padding:2px 6px;font-size:.78em;font-weight:900}
+.delta{font-weight:800;font-size:.88em}
+.delta.up{color:var(--good)}
+.delta.down{color:var(--bad)}
+.rules{line-height:1.65;font-size:.92em}
+.rules ul{padding-left:1.3em;margin:6px 0}
+.empty{text-align:center;color:var(--muted);padding:18px 8px}
+
+/* 대국 화면 */
+.game-layout{width:min(760px,100%);margin:0 auto;padding:12px 14px 28px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.players-row{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard{padding:10px 12px;border:2px solid;display:flex;flex-direction:column;gap:6px}
+.pcard .top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pcard .you{font-size:.72em;font-weight:900;padding:1px 5px}
+.timer{height:6px;width:100%;overflow:hidden}
+.timer>i{display:block;height:100%;transition:width .2s linear}
+.g-status{width:100%;padding:8px 12px;border:1px solid;text-align:center;font-weight:800;font-size:.94em}
+.board-stage{width:100%;display:flex;justify-content:center;padding:6px 0}
+.board-wrap{position:relative;width:min(540px,92vw);aspect-ratio:1/1}
+.board-wrap canvas{width:100%;height:100%;display:block;touch-action:manipulation;cursor:pointer}
+.board-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.ov-card{width:min(360px,100%);padding:22px 18px;text-align:center}
+.ov-card h2{margin:0 0 6px;font-size:1.5em}
+.score-box{margin:12px 0;padding:10px;border:1px solid;font-weight:800}
+
+/* 관리자 테이블 & 그리드 */
+.tbl-wrap{border:1px solid;overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:.9em}
+.tbl th,.tbl td{padding:9px 10px;text-align:left;border-bottom:1px solid;white-space:nowrap}
+.tbl th.num,.tbl td.num{text-align:right}
+.row-actions{display:flex;gap:5px;flex-wrap:wrap}
+.code-big{font-family:ui-monospace,Consolas,monospace;font-weight:800;padding:2px 6px;background:rgba(0,0,0,.06)}
+
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.live-card{border:1px solid;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.live-card canvas{width:100%;aspect-ratio:1/1;display:block}
+.live-card .vs{display:flex;flex-direction:column;gap:4px;font-size:.88em}
+.live-card .row{display:flex;align-items:center;gap:6px}
+.live-card .meta{display:flex;justify-content:space-between;font-size:.8em;color:var(--muted)}
+
+.stu-pick{display:flex;flex-wrap:wrap;gap:8px}
+.stu-pick label{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid;margin:0;cursor:pointer;font-size:.88em}
+.stu-pick label.dis{opacity:.5;cursor:not-allowed}
+.stu-pick input[type=checkbox]{width:auto;margin:0}
+.stu-pick .st{font-size:.78em;color:var(--muted)}
+
+.pairs{display:flex;flex-direction:column;gap:8px}
+.pairs .p{display:flex;align-items:center;gap:8px;padding:8px 10px;flex-wrap:wrap}
+.pairs .vsx{font-weight:900;color:var(--bad)}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+.form-grid label small{display:block;font-weight:400;font-size:.82em;margin-top:2px;line-height:1.4}
+
+.tier-bars{display:flex;flex-direction:column;gap:8px}
+.tier-bars .tb{display:grid;grid-template-columns:120px 1fr 32px;align-items:center;gap:8px}
+.tier-bars .bar{height:12px;overflow:hidden}
+.tier-bars .bar i{display:block;height:100%}
+.kv{display:grid;grid-template-columns:34px 1fr;gap:8px 10px;align-items:center;margin:0}
+.kv dd{margin:0;font-size:.9em}
+
+/* 모달 & 토스트 */
+.modal-bg{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{width:min(460px,100%);max-height:90vh;overflow-y:auto;padding:22px 20px}
+.modal h3{margin:0 0 12px}
+.pick-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto}
+.pick-item{width:100%;padding:10px 12px;border:1px solid;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left}
+.searching{text-align:center;padding:14px 0}
+.searching .rings{position:relative;width:54px;height:54px;margin:0 auto 12px}
+.searching .rings i{position:absolute;inset:0;border:3px solid;border-radius:50%;animation:pulse 1.5s infinite ease-out}
+.searching .rings i:nth-child(2){animation-delay:.5s}
+@keyframes pulse{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.2);opacity:0}}
+
+.toast-wrap{position:fixed;bottom:18px;right:18px;z-index:70;display:flex;flex-direction:column;gap:8px;max-width:min(360px,90vw)}
+.toast{padding:10px 14px;font-weight:700;font-size:.9em}
+
+/* 승급 연출 오버레이 */
+.tu-bg{position:fixed;inset:0;z-index:65;display:flex;align-items:center;justify-content:center;padding:20px}
+.tu-card{text-align:center;max-width:420px;width:100%}
+.tu-kicker{font-size:.95em;font-weight:800;letter-spacing:.08em}
+.tu-embs{display:flex;align-items:center;justify-content:center;gap:18px;margin:22px 0 14px}
+.tu-embs svg{width:84px;height:84px}
+.tu-arrow{font-size:1.8em;font-weight:900}
+.tu-title{font-size:1.75em;font-weight:900;margin:6px 0}
+.tu-sub{font-size:.95em;margin-bottom:22px}
